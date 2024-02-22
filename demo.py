@@ -15,7 +15,7 @@ import base64
 azure_openai_key = 'f3b28a10a6d941bf94d1667cffc2e408'
 
 os.environ["OPENAI_API_KEY"] = azure_openai_key
-endpoint = 'https://hiwimobileapp-createopenai.openai.azure.com'  # Replace with your actual Azure OpenAI endpoint
+url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-07-01-preview"  # Replace with your actual Azure OpenAI endpoint
 
 headers = {
     # 'Authorization': 'Bearer ' + azure_openai_key,
@@ -24,31 +24,58 @@ headers = {
  
 }
 conversation = [
-    {"role": "system", "content": "You are an AI assistant that helps people find information."},
-    {"role": "user", "content": "Tell me a joke."}
-]
-body = {
-    "messages": conversation,
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "frequency_penalty": 0,
-    "presence_penalty": 0,
-    "max_tokens": 70,
-    "stop": 'null'
+    {
+      "role": "system",
+      "content": "You are an AI assistant that helps people find information."
+    },
+    {
+      "role": "user",
+      "content": "what is tcs"
+    }
+  ]
+body ={
+  "dataSources": [
+    {
+      "type": "AzureCognitiveSearch",
+      "parameters": {
+        "endpoint": "https://azure-search-service-hiwi-chatbot.search.windows.net",
+        "indexName": "chatindex02022024-01-index",
+        "semanticConfiguration": "default",
+        "queryType": "simple",
+        "fieldsMapping": {},
+        "inScope": 'true',
+        "roleInformation": "You are an AI assistant that helps people find information.",
+  
+        "strictness": 3,
+        "topNDocuments": 5,
+        "key": "ynt3y4kryQb5XQjSOesRzzcqPGKk6mn803SbhSYVXfAzSeByVqSc"
+      }
+    }
+  ],
+  "messages": conversation,
+  "temperature": 0.7,
+  "top_p": 0.95,
+  "frequency_penalty": 0,
+  "presence_penalty": 0,
+  "max_tokens": 800
 }
 
 # our Azure OpenAI endpoint URL
-azure_openai_url = f'{endpoint}/openai/deployments/Hiwi-Mobile-App-Chatbot/chat/completions?api-version=2023-07-01-preview'
+azure_openai_url = url
 
 # streamlit framework
 # st.title('Celebrity Search Results')
 # input_text = st.text_input("Search the topic u want")
 
 response = requests.post(azure_openai_url, headers=headers, json=body)
-generated_text = response.json().get('choices', [])[0].get('message', {}).get('content', '')
+
+# generated_text = response.json()
+
+# print(response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
+#  )
 
 config_url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
-source_lang = "te"
+source_lang = "en"
 ulca_header_config = {
 
     "userID": "e143f6eaa3b344d681cf183673608a4d",
@@ -141,16 +168,34 @@ while True:
         conversation.append(new_user_message)
         
         body = {
-            "messages": conversation,
-            "temperature": 0.7,
-            "top_p": 0.95,
-            "frequency_penalty": 0,
-            "presence_penalty": 0,
-            "max_tokens": 70,
-            "stop": 'null'
-        }
+     "dataSources": [
+    {
+      "type": "AzureCognitiveSearch",
+      "parameters": {
+        "endpoint": "https://azure-search-service-hiwi-chatbot.search.windows.net",
+        "indexName": "chatindex02022024-01-index",
+        "semanticConfiguration": "default",
+        "queryType": "simple",
+        "fieldsMapping": {},
+        "inScope": 'True',
+        "roleInformation": "You are an AI assistant that helps people find information.",
+       
+        "strictness": 3,
+        "topNDocuments": 5,
+        "key": "ynt3y4kryQb5XQjSOesRzzcqPGKk6mn803SbhSYVXfAzSeByVqSc"
+      }
+    }
+  ],
+    "messages": conversation,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "max_tokens": 70
+   
+}
         response = requests.post(azure_openai_url, headers=headers, json=body)
-        new_generated_text = response.json().get('choices', [])[0].get('message', {}).get('content', '')
+        new_generated_text = response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
         input_text = "Hello, how are you?"
     
     
