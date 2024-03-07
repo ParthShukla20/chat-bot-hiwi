@@ -15,7 +15,7 @@ import base64
 azure_openai_key = 'f3b28a10a6d941bf94d1667cffc2e408'
 
 os.environ["OPENAI_API_KEY"] = azure_openai_key
-url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-07-01-preview"  # Replace with your actual Azure OpenAI endpoint
+url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-07-01-preview"  
 
 headers = {
     # 'Authorization': 'Bearer ' + azure_openai_key,
@@ -57,7 +57,7 @@ body ={
   "top_p": 0.95,
   "frequency_penalty": 0,
   "presence_penalty": 0,
-  "max_tokens": 150
+  "max_tokens": 100
 }
 
 # our Azure OpenAI endpoint URL
@@ -75,7 +75,12 @@ response = requests.post(azure_openai_url, headers=headers, json=body)
 #  )
 
 config_url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
-source_lang = "hi"
+model = {'telugu':'te' , 'tamil':'ta', 'hindi': 'hi', 'gujarati':'gu', 'marathi':'mr','english':'en'}
+
+source_lang =model[input("Enter the language you want to talk : ").lower()]
+
+print(source_lang)
+
 ulca_header_config = {
 
     "userID": "e143f6eaa3b344d681cf183673608a4d",
@@ -191,7 +196,7 @@ while True:
     "top_p": 0.95,
     "frequency_penalty": 0,
     "presence_penalty": 0,
-    "max_tokens": 150
+    "max_tokens": 200
    
 }
         response = requests.post(azure_openai_url, headers=headers, json=body)
