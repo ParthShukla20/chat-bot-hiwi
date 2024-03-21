@@ -4,14 +4,19 @@ import requests
 import streamlit as st
 import speech_recognition as sr
 from gtts import gTTS
-from pydub import AudioSegment
 from langchain.llms import OpenAI
 import time
 import base64
+from pydub import AudioSegment
+from pydub.playback import play
+from io import BytesIO
+import pyttsx3
+import pygame
+import tempfile
 
-# from transformers import MBartForConditionalGeneration, MBartTokenizer
 
 
+pygame.init()
 azure_openai_key = 'f3b28a10a6d941bf94d1667cffc2e408'
 
 os.environ["OPENAI_API_KEY"] = azure_openai_key
@@ -57,7 +62,7 @@ body ={
   "top_p": 0.95,
   "frequency_penalty": 0,
   "presence_penalty": 0,
-  "max_tokens": 100
+  "max_tokens": 150
 }
 
 # our Azure OpenAI endpoint URL
@@ -69,13 +74,18 @@ azure_openai_url = url
 
 response = requests.post(azure_openai_url, headers=headers, json=body)
 
-# generated_text = response.json()
 
 # print(response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
 #  )
-
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)
+engine.setProperty('rate', 138)          
 config_url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
 model = {'telugu':'te' , 'tamil':'ta', 'hindi': 'hi', 'gujarati':'gu', 'marathi':'mr','english':'en'}
+
+engine.say("Hello I am Emmma , I am here to help you. Please select your conversational language")
+engine.runAndWait()
 
 source_lang =model[input("Enter the language you want to talk : ").lower()]
 
@@ -165,67 +175,55 @@ while True:
             }
         ulca_compute_url = data['pipelineInferenceAPIEndPoint']['callbackUrl']
         compute_response = requests.post(ulca_compute_url, headers=ulca_header_compute, json=ulca_body_compute)
-        response_data = compute_response.json()  
+        response_data = compute_response.json()
+        # print(response_data)
         source_value =response_data["pipelineResponse"][0]["output"][0]["source"]
         print(source_value)
 
         new_user_message = {"role": "user", "content": source_value}
         conversation.append(new_user_message)
         
-        body = {
-     "dataSources": [
-    {
-      "type": "AzureCognitiveSearch",
-      "parameters": {
-        "endpoint": "https://azure-search-service-hiwi-chatbot.search.windows.net",
-        "indexName": "chatindex02022024-01-index",
-        "semanticConfiguration": "default",
-        "queryType": "simple",
-        "fieldsMapping": {},
-        "inScope": 'True',
-        "roleInformation": "You are an AI assistant that helps people find information.",
-       
-        "strictness": 3,
-        "topNDocuments": 5,
-        "key": "ynt3y4kryQb5XQjSOesRzzcqPGKk6mn803SbhSYVXfAzSeByVqSc"
-      }
-    }
-  ],
-    "messages": conversation,
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "frequency_penalty": 0,
-    "presence_penalty": 0,
-    "max_tokens": 200
-   
-}
+        
         response = requests.post(azure_openai_url, headers=headers, json=body)
         new_generated_text = response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
-        input_text = "Hello, how are you?"
-    
-    
 
-
-
-        # Convert the generated text to speech
-        text_to_speak = new_generated_text 
+        text_to_speak = new_generated_text  
         tts = gTTS(text=text_to_speak, lang=source_lang, slow=False)
-    
-    
-    
-        audio_file = "output.mp3"
+
+        print(text_to_speak)
+      
+        # engine.setProperty('rate', 138)  
+        # engine.say(text_to_speak)
+        # engine.runAndWait()
+
         
-        # # Save the audio file
-        tts.save(audio_file)
+
+        audio_data = BytesIO()
+        tts.write_to_fp(audio_data)
+        audio_data.seek(0)
+
+        pygame.mixer.init()
+        pygame.mixer.music.load(audio_data)
+        pygame.mixer.music.play()
+
+
+        while pygame.mixer.music.get_busy():
+            continue
         
-        # # Get the duration of the audio file
-        audio = MP3(audio_file)
-        duration_in_seconds = audio.info.length
+        # print(text_to_speak)
+
+        # audio_file = "output.mp3"
         
+        # # # Save the audio file
+        # tts.save(audio_file)
+
+        # my_sound = pygame.mixer.Sound('output.mp3')
+        # my_sound.play()
+        # audio = MP3(audio_file)
+        # duration_in_seconds = audio.info.length
         
-        
-        os.system("start " + audio_file)
-        time.sleep(duration_in_seconds)
+        # # os.system("start " + audio_file)
+        # time.sleep(duration_in_seconds)
         
     
     if text in text.lower() == "bye" or text in text.lower() == "thank you" :
