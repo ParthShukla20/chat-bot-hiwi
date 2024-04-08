@@ -1,26 +1,22 @@
 import os
-from mutagen.mp3 import MP3
 import requests
-import streamlit as st
 import speech_recognition as sr
 from gtts import gTTS
 from langchain.llms import OpenAI
-import time
 import base64
-from pydub import AudioSegment
 from pydub.playback import play
 from io import BytesIO
 import pyttsx3
 import pygame
-import tempfile
-
+import re
 
 
 pygame.init()
 azure_openai_key = 'f3b28a10a6d941bf94d1667cffc2e408'
 
 os.environ["OPENAI_API_KEY"] = azure_openai_key
-url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-07-01-preview"  
+
+url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-09-15-preview"  
 
 headers = {
     # 'Authorization': 'Bearer ' + azure_openai_key,
@@ -80,14 +76,48 @@ response = requests.post(azure_openai_url, headers=headers, json=body)
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[1].id)
-engine.setProperty('rate', 138)          
-config_url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
-model = {'telugu':'te' , 'tamil':'ta', 'hindi': 'hi', 'gujarati':'gu', 'marathi':'mr','english':'en'}
-
+engine.setProperty('rate', 138)        
 engine.say("Hello I am Emmma , I am here to help you. Please select your conversational language")
-engine.runAndWait()
+engine.runAndWait()  
+config_url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
+model = {'telugu': 'te', 'tamil': 'ta', 'hindi': 'hi', 'gujarati': 'gu', 'marathi': 'mr', 'english': 'en','malyalam':'ml'}
+    
+    # source_lang = model.get(input("Enter the language you want to talk : ").lower())
+r = sr.Recognizer()
 
-source_lang =model[input("Enter the language you want to talk : ").lower()]
+# Initialize an empty string to store the recognized text
+text = ""
+source_lang=""
+
+# Use a context manager to handle the microphone
+while(True):
+    with sr.Microphone() as source:
+        print("Speak:")
+    
+    # Adjust recognizer settings
+        r.energy_threshold = 1000
+        r.adjust_for_ambient_noise(source, 1.2)
+    
+        try:
+        # Listen to the microphone input
+            audio = r.listen(source, timeout=10)  # Adjust the timeout as needed
+        
+        # Convert audio to text
+            text = r.recognize_google(audio)
+            text = text.lower()
+        
+       
+            print("You said:", text)
+            if(text in model):
+                source_lang = model.get(text)
+                break
+            else:
+                print("Please say correctly")
+        except sr.UnknownValueError:
+            print("Sorry, I couldn't understand what you said.")
+        except sr.RequestError as e:
+            print("Error fetching results; {0}".format(e))
+
 
 print(source_lang)
 
@@ -185,19 +215,18 @@ while True:
         
         
         response = requests.post(azure_openai_url, headers=headers, json=body)
-        new_generated_text = response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
+        new_generated_text = response.json()
+        choices =new_generated_text['choices']
 
-        text_to_speak = new_generated_text  
+
+        first_choice_content = choices[0]['message']['content']
+
+        text_to_speak = first_choice_content
+        text_to_speak = re.sub(r'\[doc(\d+)\]','\b\b',  text_to_speak)
         tts = gTTS(text=text_to_speak, lang=source_lang, slow=False)
 
         print(text_to_speak)
       
-        # engine.setProperty('rate', 138)  
-        # engine.say(text_to_speak)
-        # engine.runAndWait()
-
-        
-
         audio_data = BytesIO()
         tts.write_to_fp(audio_data)
         audio_data.seek(0)

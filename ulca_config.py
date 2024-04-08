@@ -1,5 +1,6 @@
 import requests
 import pyttsx3
+import speech_recognition as sr
 
 def ulca_config():
 
@@ -11,9 +12,44 @@ def ulca_config():
     engine.runAndWait()
 
     config_url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
-    model = {'telugu': 'te', 'tamil': 'ta', 'hindi': 'hi', 'gujarati': 'gu', 'marathi': 'mr', 'english': 'en'}
+    model = {'telugu': 'te', 'tamil': 'ta', 'hindi': 'hi', 'gujarati': 'gu', 'marathi': 'mr', 'english': 'en','malyalam':'ml'}
+    
+    # source_lang = model.get(input("Enter the language you want to talk : ").lower())
+    r = sr.Recognizer()
 
-    source_lang = model[input("Enter the language you want to talk : ").lower()]
+# Initialize an empty string to store the recognized text
+    text = ""
+    source_lang=""
+
+# Use a context manager to handle the microphone
+    while(True):
+         with sr.Microphone() as source:
+            print("Speak:")
+    
+    # Adjust recognizer settings
+            r.energy_threshold = 1000
+            r.adjust_for_ambient_noise(source, 1.2)
+    
+            try:
+        # Listen to the microphone input
+                audio = r.listen(source, timeout=10)  # Adjust the timeout as needed
+        
+        # Convert audio to text
+                text = r.recognize_google(audio)
+                text = text.lower()
+        
+       
+                print("You said:", text)
+                if(text in model):
+                    source_lang = model.get(text)
+                    break
+                else:
+                    print("Please say correctly")
+            except sr.UnknownValueError:
+                print("Sorry, I couldn't understand what you said.")
+            except sr.RequestError as e:
+                print("Error fetching results; {0}".format(e))
+
 
     print(source_lang)
 
@@ -116,13 +152,19 @@ def ulca_compute(encoded_audio,source_lang,service_id,data,conversation,azure_op
         "top_p": 0.95,
         "frequency_penalty": 0,
         "presence_penalty": 0,
-        "max_tokens": 200
+        "max_tokens": 150
     }
     
    
         
     response = requests.post(azure_openai_url, headers=headers, json=body)
 
-    new_generated_text = response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
+    # new_generated_text = response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
+    new_generated_text = response.json()
+    choices =new_generated_text['choices']
 
-    return new_generated_text ,conversation, body
+# Assuming you want to extract the content of the first choice
+    first_choice_content = choices[0]['message']['content']
+
+
+    return first_choice_content ,conversation, body

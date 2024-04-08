@@ -5,7 +5,7 @@ def azure_api(conversation):
     azure_openai_key = 'f3b28a10a6d941bf94d1667cffc2e408'
     os.environ["OPENAI_API_KEY"] = azure_openai_key
     
-    url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-07-01-preview"  
+    url = "https://hiwimobileapp-createopenai.openai.azure.com/openai/deployments/Hiwi-Mobile-App-Chatbot/extensions/chat/completions?api-version=2023-09-15-preview"  
     
     headers = {
         'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ def azure_api(conversation):
         "top_p": 0.95,
         "frequency_penalty": 0,
         "presence_penalty": 0,
-        "max_tokens":200
+        "max_tokens":150
     }
     
     # Sending the request

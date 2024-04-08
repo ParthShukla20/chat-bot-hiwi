@@ -216,3 +216,4 @@ while True:
     
     if text in text.lower() == "bye" or text in text.lower() == "thank you" :
         break
+ 

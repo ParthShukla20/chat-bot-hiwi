@@ -1,0 +1,10 @@
+flask==3.0.2
+requests
+SpeechRecognition
+gTTS
+langchain
+pydub
+pyttsx3
+pygame
+keyboard
+
