@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify, render_template,request
 import os
 import requests
 import speech_recognition as sr
@@ -11,11 +11,19 @@ import pyttsx3
 import pygame
 import re
 import keyboard
+import threading
+
+
 
 app = Flask(__name__)
 
+def ai_res(ans):
+    return ans
 
-@app.route("/voicebot")
+
+text_to_speak="starting.."
+
+
 def voicebot():
 
 
@@ -65,15 +73,10 @@ def voicebot():
     # our Azure OpenAI endpoint URL
     azure_openai_url = url
 
-    # streamlit framework
-    # st.title('Celebrity Search Results')
-    # input_text = st.text_input("Search the topic u want")
 
 
-    response = requests.post(azure_openai_url, headers=headers, json=body)
+    # response = requests.post(azure_openai_url, headers=headers, json=body)
 
-    # print(response.json().get('choices', [])[0].get('messages', [])[1].get('content', '')
-    #  )
     engine = pyttsx3.init()
     voices = engine.getProperty("voices")
     engine.setProperty("voice", voices[1].id)
@@ -210,7 +213,6 @@ def voicebot():
             text_to_speak = first_choice_content
             text_to_speak = re.sub(r"\[doc(\d+)\]", "\b\b", text_to_speak)
             tts = gTTS(text=text_to_speak, lang=source_lang, slow=False)
-
             print(text_to_speak)
 
             audio_data = BytesIO()
@@ -226,10 +228,38 @@ def voicebot():
                 continue
 
 
+
+@app.route('/voicebot', methods=['POST'])
+def voicebot2():
+    t1 = threading.Thread(target = voicebot)
+    t1.start()
+    # return render_template("index2.html")
+    # audio_file = request.files['audio']
+    # recognizer = sr.Recognizer()
+
+    # with sr.AudioFile(audio_file) as source:
+    #     audio_data = recognizer.record(source)
+
+    # try:
+    #     text = recognizer.recognize_google(audio_data)
+    # except sr.UnknownValueError:
+    #     text = "Could not understand audio"
+    # except sr.RequestError as e:
+    #     text = "Error: {0}".format(e)
+
+    # return jsonify({'text': text})
+
+@app.route('/voicebot', methods=['GET'])
+def voicebot3():
+
+   return render_template("index2.html",name="Parth")
+   
+
 @app.route("/")
 def home():
-    return "Hello I am Emma"
+    return render_template("index.html")
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=4050, debug=True)
+

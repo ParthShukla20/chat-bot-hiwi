@@ -1,0 +1,59 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Input</title>
+</head>
+<body>
+    <h1>Voice Input Demo</h1>
+    <button id="recordButton" >Start Recording</button>
+    <div id="output"></div>
+
+    <script>
+        const recordButton = document.getElementById('recordButton');
+        const outputDiv = document.getElementById('output');    
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        recordButton.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+    
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
+               
+                const response = await fetch('/voicebot', {
+                    method: 'POST',
+                    body: formData
+                });
+              
+                    window.location.href='http://127.0.0.1:4050/voicebot'
+
+                // const data = await response.json();
+                // outputDiv.textContent = data.text;
+            };
+
+            mediaRecorder.start();
+            recordButton.textContent = 'Stop Recording';
+        });
+
+        document.addEventListener('keydown', async (event) => {
+            if (event.key === 'Escape' && mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordButton.textContent = 'Start Recording';
+       
+
+            }
+        });
+    </script>
+</body>
+</html>

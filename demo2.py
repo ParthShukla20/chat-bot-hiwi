@@ -6,7 +6,6 @@ html_code = '''
 
 soup = BeautifulSoup(html_code, 'html.parser')
 
-# Find the div containing the list of universities
 universities_div = soup.find('div', class_='choices__list--dropdown')
 
 # Extract the list of universities
