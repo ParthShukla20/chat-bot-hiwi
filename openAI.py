@@ -18,11 +18,10 @@ connection = psycopg2.connect(database="testdb", user="read_user", password="rea
 cursor = connection.cursor()
 
 query1 = "SELECT u.email, u.latest_jwt,u.user_hash_id , l.hiwi_id from user_service.users as u  join transaction_service.ledger l on l.user_hash_id = u.user_hash_id where u.latest_jwt is not NULL order by u.updated_at desc, l.updated_at desc limit 1;"
-query2 = "SELECT u.email, u.latest_jwt,u.user_hash_id , l.hiwi_id from user_service.users as u  join transaction_service.ledger l on l.user_hash_id = u.user_hash_id where u.email='ujwal.tamminedi@hiwipay.com' and u.latest_jwt is not NULL order by u.updated_at desc, l.updated_at desc LIMIT 1;"
+
+query2 = "SELECT u.email, u.latest_jwt,u.user_hash_id , l.hiwi_id from user_service.users as u  join transaction_service.ledger l on l.user_hash_id = u.user_hash_id where u.email='ommandlik8478@gmail.com' and u.latest_jwt is not NULL order by u.updated_at desc, l.updated_at desc LIMIT 1;"
+
 cursor.execute(query2)
-
-
-
 
 pygame.init()
 translator = Translator()
@@ -106,9 +105,6 @@ text = ""
 source_lang=""
 
 # Use a context manager to handle the microphone
-
-
-
 while(True):
     with sr.Microphone() as source:
         print("Speak:")
@@ -235,6 +231,8 @@ elif(status.get("universityStudentDetails")):
 
 elif(status.get("payee")):
     statement = "You would like to remit funds to a University Account. Please go ahead and enter your Year of Completion, Program Type, Student ID, and Payment Type."
+else:
+    statement = "can you please say at which step of challan generation you are?"
 
 content = statement      
 
@@ -243,8 +241,7 @@ statement = translator.translate(statement, src='en', dest=source_lang).text
 tts = gTTS(text=statement, lang=source_lang, slow=False)
 
 print(statement)
-new_user_message = {"role": "user", "content": statement}
-conversation.append(new_user_message)
+
 audio_data = BytesIO()
 tts.write_to_fp(audio_data)
 audio_data.seek(0)
@@ -252,11 +249,11 @@ audio_data.seek(0)
 pygame.mixer.init()
 pygame.mixer.music.load(audio_data)
 pygame.mixer.music.play()
-
-
 while pygame.mixer.music.get_busy():
     continue
 
+new_user_message = {"role": "user", "content": statement}
+conversation.append(new_user_message)
 while True:
     r = sr.Recognizer()
     text = ""
@@ -318,13 +315,11 @@ while True:
         text_to_speak = re.sub(r'\[doc(\d+)\]','\b\b',  text_to_speak)
         tts = gTTS(text=text_to_speak, lang=source_lang, slow=False)
 
-        print(text_to_speak)
-      
         audio_data = BytesIO()
         tts.write_to_fp(audio_data)
         audio_data.seek(0)
-                                                                                    
         pygame.mixer.init()
+        print(text_to_speak)
         pygame.mixer.music.load(audio_data)
         pygame.mixer.music.play()
 
