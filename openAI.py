@@ -12,6 +12,7 @@ import re
 from googletrans import Translator
 import json
 import psycopg2
+import keyboard
 
 
 connection = psycopg2.connect(database="testdb", user="read_user", password="read_user", host="20.219.159.30", port=5431)
@@ -19,7 +20,7 @@ cursor = connection.cursor()
 
 query1 = "SELECT u.email, u.latest_jwt,u.user_hash_id , l.hiwi_id from user_service.users as u  join transaction_service.ledger l on l.user_hash_id = u.user_hash_id where u.latest_jwt is not NULL order by u.updated_at desc, l.updated_at desc limit 1;"
 
-query2 = "SELECT u.email, u.latest_jwt,u.user_hash_id , l.hiwi_id from user_service.users as u  join transaction_service.ledger l on l.user_hash_id = u.user_hash_id where u.email='ommandlik8478@gmail.com' and u.latest_jwt is not NULL order by u.updated_at desc, l.updated_at desc LIMIT 1;"
+query2 = "SELECT u.email, u.latest_jwt,u.user_hash_id , l.hiwi_id from user_service.users as u  join transaction_service.ledger l on l.user_hash_id = u.user_hash_id where u.email='ujwal.tamminedi@hiwipay.com' and u.latest_jwt is not NULL order by u.updated_at desc, l.updated_at desc LIMIT 1;"
 
 cursor.execute(query2)
 
@@ -35,7 +36,7 @@ headers = {
     # 'Authorization': 'Bearer ' + azure_openai_key,
     'Content-Type': 'application/json',
     'api-key'  : azure_openai_key
- 
+  
 }
 content = "what is tcs"
 conversation = [
@@ -182,6 +183,7 @@ else:
 record = cursor.fetchall()
 
 print(record)
+
 email = record[0][0]
 jwt = record[0][1]
 user_hash_id = record[0][2]
@@ -322,8 +324,9 @@ while True:
         print(text_to_speak)
         pygame.mixer.music.load(audio_data)
         pygame.mixer.music.play()
+        keyboard.on_press_key('q', lambda event: pygame.mixer.music.stop())
 
-
+  
         while pygame.mixer.music.get_busy():
             continue
         

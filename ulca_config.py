@@ -99,6 +99,7 @@ def ulca_config():
 
 
 def ulca_compute(encoded_audio,source_lang,service_id,data,conversation,azure_openai_url,headers,body):
+    
     ulca_body_compute= { "pipelineTasks": [
             {
                 "taskType": "asr",
